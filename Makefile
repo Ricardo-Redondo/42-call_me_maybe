@@ -1,15 +1,13 @@
 all: run
 
 install:
-	@mkdir -p $$HOME/sgoingfre/.cache
-
-	@if [ -d $$HOME/.cache ] && [ ! -L $$HOME/.cache]; then
-		cp -a $$HOME/.cache/. $$HOME/sgoingfre/.cache/; \
-		rm -rf $$HOME/.cache
+	@mkdir -p $$HOME/sgoinfre/.cache
+	@if [ -d $$HOME/.cache ] && [ ! -L $$HOME/.cache ]; then \
+		cp -a $$HOME/.cache/. $$HOME/sgoinfre/.cache/; \
+		rm -rf $$HOME/.cache; \
 	fi
-
-	@if [ -e $$HOME/.cache ] then \
-		ln -s $$HOME/sgoingfre/.cache $$HOME/.cache;\
+	@if [ ! -e $$HOME/.cache ]; then \
+		ln -s $$HOME/sgoinfre/.cache $$HOME/.cache; \
 	fi
 	uv sync
 
