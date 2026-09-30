@@ -118,8 +118,8 @@ class Decoder:
             step 1: "_add" / "_g"...      -> model chooses among them
             once one name is left         -> stop, no more calls
         """
-        picked: list[int] = []          # tokens of the name chosen so far
-        candidates = list(self.name_ids)    # list(dict) = its keys
+        picked: list[int] = [] # tokens of the name chosen so far
+        candidates = list(self.name_ids) # list(dict) = its keys
         while len(candidates) > 1:
             step = len(picked)
             # Group the remaining names by their next token:
@@ -128,8 +128,7 @@ class Decoder:
             for name in candidates:
                 toks = self.name_ids[name]
                 # if this name is already complete, its "next token"
-                # is the closing quote of "name": "..."
-                # (x if condition else y  is a one-line if/else)
+                # is the closing quote -> "fn + _add + number + "
                 key = toks[step] if step < len(toks) else self.quote_id
                 # setdefault: if `key` isn't in the dict yet, create it
                 # with an empty list; then append the name to that list
@@ -137,8 +136,7 @@ class Decoder:
             if len(nxt) == 1:
                 # every candidate continues the same way: forced token,
                 # no need to ask the model.
-                # next(iter(nxt)) = "the first (and only) key of nxt"
-                tok = next(iter(nxt))
+                tok = list(nxt)[0]
             else:
                 # real choice: the model picks, but only among these.
                 # ids + picked = the prompt followed by the name so far;
@@ -187,9 +185,8 @@ class Decoder:
             text += v.texts[tok]
             ids.append(tok)
         # rstrip(".") removes "." characters from the END only.
-        text = text.rstrip(".")  # in case we hit MAX_VALUE_TOKENS on "12."
+        text = text.rstrip(".")  # in case we hit max tokens on ex: "12."
         try:
-            # float("265") gives 265.0, int("7") gives 7
             return int(text) if integer else float(text)
         except ValueError:
             # only possible if the limit was hit before any digit
