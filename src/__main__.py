@@ -16,6 +16,17 @@ class InputError(Exception):
     """Input file missing or invalid (message is user-facing)."""
 
 
+def fmt_time(seconds: float) -> str:
+    """Format a duration as minutes:seconds, e.g. 105.3 -> "1:45.30".
+
+    divmod(105.3, 60) gives (1.0, 45.3): whole minutes and the rest.
+    {s:05.2f} = 2 decimals, padded with zeros to 5 characters, so
+    5.3 seconds shows as "05.30" (like a clock).
+    """
+    m, s = divmod(seconds, 60)
+    return f"{int(m)}:{s:05.2f}"
+
+
 def parse_args() -> argparse.Namespace:
     """CLI flags with the subject's default paths.
 
@@ -99,8 +110,8 @@ def main() -> int:
         # no internet to download the model, out of memory...
         print(f"error: could not load the model: {e}", file=sys.stderr)
         return 1
-    # {x:.1f} = show x with 1 digit after the decimal point
-    print(f"model ready in {time.time() - start:.1f}s", file=sys.stderr)
+    print(f"model ready in {fmt_time(time.time() - start)}",
+          file=sys.stderr)
 
     # 3. One FunctionCall per prompt, in the same order as the input
     #    (the moulinette compares answer i with test i).
@@ -119,9 +130,8 @@ def main() -> int:
                                 name=functions[0].name, parameters={})
         calls.append(call)
         # progress line: time, number of model runs, result.
-        # {x:5.2f} = 2 decimals, padded to 5 characters wide;
         # {n:3d} = whole number padded to 3 characters (aligns columns)
-        print(f"[{i}/{len(prompts)}] {time.time() - t:5.2f}s "
+        print(f"[{i}/{len(prompts)}] {fmt_time(time.time() - t)} "
               f"{llm.calls - before:3d} calls  {call.name} "
               f"{json.dumps(call.parameters)}", file=sys.stderr)
 
@@ -140,7 +150,8 @@ def main() -> int:
     except OSError as e:
         print(f"error: cannot write {out}: {e.strerror}", file=sys.stderr)
         return 1
-    print(f"done in {time.time() - start:.1f}s -> {out}", file=sys.stderr)
+    print(f"done in {fmt_time(time.time() - start)} -> {out}",
+          file=sys.stderr)
     return 0
 
 

@@ -118,8 +118,8 @@ class Decoder:
             step 1: "_add" / "_g"...      -> model chooses among them
             once one name is left         -> stop, no more calls
         """
-        picked: list[int] = [] # tokens of the name chosen so far
-        candidates = list(self.name_ids) # list(dict) = its keys
+        picked: list[int] = []  # tokens of the name chosen so far
+        candidates = list(self.name_ids)  # list(dict) = its keys
         while len(candidates) > 1:
             step = len(picked)
             # Group the remaining names by their next token:

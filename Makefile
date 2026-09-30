@@ -29,15 +29,20 @@ lint-strict:
 	uv run flake8 .
 	uv run mypy . --strict
 
-# full moulinette run (private set): prepare -> run OUR program -> grade
+# full moulinette run, private set then public set:
+# prepare -> run OUR program -> grade (the program must run between the two)
 moulinette:
-	cd moulinette && uv sync && uv run python -m moulinette prepare_exercises --set private
-	uv run python -m src \
-		--functions_definition moulinette/data/input/functions_definition.json \
-		--input moulinette/data/input/function_calling_tests.json \
-		--output moulinette/data/output/function_calling_results.json
-	cd moulinette && uv run python -m moulinette grade_student_answers --set private \
-		--student_answer_path data/output/function_calling_results.json
+	cd moulinette && uv sync
+	@for set in private public; do \
+		echo "===== $$set set ====="; \
+		(cd moulinette && uv run python -m moulinette prepare_exercises --set $$set) && \
+		uv run python -m src \
+			--functions_definition moulinette/data/input/functions_definition.json \
+			--input moulinette/data/input/function_calling_tests.json \
+			--output moulinette/data/output/function_calling_results.json && \
+		(cd moulinette && uv run python -m moulinette grade_student_answers --set $$set \
+			--student_answer_path data/output/function_calling_results.json) || exit 1; \
+	done
 
 # time it the way a school (CPU-only) machine will run it
 cpu-time:
