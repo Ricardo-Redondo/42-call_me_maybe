@@ -1,6 +1,14 @@
+# uv's installer puts it in ~/.local/bin: add that to PATH so the
+# rules below find uv right after ensure-uv installs it
+export PATH := $(HOME)/.local/bin:$(PATH)
+
 all: run
 
-install:
+# install uv only if it's missing
+ensure-uv:
+	@which uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh
+
+install: ensure-uv
 	@mkdir -p $$HOME/sgoinfre/.cache
 	@if [ -d $$HOME/.cache ] && [ ! -L $$HOME/.cache ]; then \
 		cp -a $$HOME/.cache/. $$HOME/sgoinfre/.cache/; \
@@ -11,27 +19,27 @@ install:
 	fi
 	uv sync
 
-run:
+run: install
 	uv run python -m src
 
-debug:
+debug: install
 	uv run python -m pdb -m src
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	rm -rf .mypy_cache data/output
 
-lint:
+lint: install
 	uv run flake8 .
 	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
-lint-strict:
+lint-strict: install
 	uv run flake8 .
 	uv run mypy . --strict
 
 # full moulinette run, private set then public set:
 # prepare -> run OUR program -> grade (the program must run between the two)
-moulinette:
+moulinette: install
 	cd moulinette && uv sync
 	@for set in private public; do \
 		echo "===== $$set set ====="; \
@@ -45,7 +53,7 @@ moulinette:
 	done
 
 # time it the way a school (CPU-only) machine will run it
-cpu-time:
+cpu-time: install
 	time CUDA_VISIBLE_DEVICES="" uv run python -m src
 
-.PHONY: all install run debug clean lint lint-strict moulinette cpu-time
+.PHONY: all ensure-uv install run debug clean lint lint-strict moulinette cpu-time

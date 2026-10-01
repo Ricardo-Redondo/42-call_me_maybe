@@ -77,6 +77,7 @@ def main() -> int:
 
     Returns the exit code: 0 on success, 1 on any error.
     """
+    start = time.time()
     args = parse_args()
     # 1. Read and validate the inputs BEFORE loading the model, so a
     #    bad file fails in 0.1 s instead of after the model loads.
@@ -95,7 +96,6 @@ def main() -> int:
         return 1
 
     # 2. Load the model and build the vocabulary masks.
-    start = time.time()     # current time in seconds, to measure speed
     try:
         # imported here so the input checks above don't wait for
         # torch/transformers to load (they are slow to import)
